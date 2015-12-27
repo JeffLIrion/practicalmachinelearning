@@ -5,7 +5,7 @@ date: "December 26, 2015"
 output: html_document
 ---
 
-```{r}
+```{r, include=FALSE}
 setwd("C:/Users/Jeff/Coursera/Machine Learning/Course_Project_GitHub/practicalmachinelearning")
 rm(list=ls())
 ```
