@@ -73,24 +73,17 @@ img {
 <blockquote>
 <p><strong>Background</strong></p>
 <p>Using devices such as <em>Jawbone Up</em>, <em>Nike FuelBand</em>, and <em>Fitbit</em> it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a> (see the section on the Weight Lifting Exercise Dataset).</p>
-<p><strong>Data</strong></p>
-<p>The training data for this project are available here:</p>
-<p><a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv" class="uri">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a></p>
-<p>The test data are available here:</p>
-<p><a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv" class="uri">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv</a></p>
-<p>The data for this project come from this source: <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a>. If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment.</p>
-<p><strong>What you should submit</strong></p>
-<p>The goal of your project is to predict the manner in which they did the exercise. This is the “classe” variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases.</p>
-<ol style="list-style-type: decimal">
-<li>Your submission should consist of a link to a Github repo with your R markdown and compiled HTML file describing your analysis. Please constrain the text of the writeup to &lt; 2000 words and the number of figures to be less than 5. It will make it easier for the graders if you submit a repo with a gh-pages branch so the HTML page can be viewed online (and you always want to make it easy on graders :-).</li>
-<li>You should also apply your machine learning algorithm to the 20 test cases available in the test data above. Please submit your predictions in appropriate format to the programming assignment for automated grading. See the programming assignment for additional details.</li>
-</ol>
-<p><strong>Reproducibility</strong></p>
-<p>Due to security concerns with the exchange of R code, your code will not be run during the evaluation by your classmates. Please be sure that if they download the repo, they will be able to view the compiled HTML version of your analysis.</p>
 </blockquote>
 </div>
+<div id="my-write-up" class="section level1">
+<h1>My Write-Up</h1>
+<p>The original training and testing data have 160 variables. I removed columns with NA entries, which brought the number of variables down to 60. I then removed 6 additional variables which contained information that I deemed not useful: X, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp, new_window, num_window. (Prior to removing these variables, I was achieving perfect accuracy on my training and validation sets, but my model was predicting all of the test cases to be of classe A.) Aside from user_name and classe/problem_id, all of the remaining variables appear to be measurements from the fitness device.</p>
+<p>From here, I split the training data into two sets: “traindata2” for training the model (60%) and “validation” for validation of the model (40%). For puposes of reproducibility, I set the seed to 111. I trained a random forest on “traindata2” using the default parameters. I chose a random forest model because they tend to be very accurate and the data set was small enough that using a random forest was feasible.</p>
+<p>I predicted the classes on “traindata2” and found that the accuracy was 100%. I then used this model to predict the values on the “validation” set and found the accuracy to be 99.3%. Since this was the first model that I tried (as opposed to trying multiple models and selecting the best performer on the validation set), I expect the out of sample error to be around 99%.</p>
+<p>I applied this model to the testing data set and submitted my answers, and it correctly identified all 20 cases.</p>
+</div>
 <div id="my-code" class="section level1">
-<h1>MY CODE</h1>
+<h1>My Code</h1>
 <pre class="r"><code># load necessary libraries
 library(caret)
 library(randomForest)</code></pre>
@@ -106,11 +99,6 @@ testdata  &lt;- testdata[,comps]
 # remove columns with data that isn't useful
 traindata &lt;- traindata[,-c(1,3,4,5,6,7)]
 testdata &lt;- testdata[,-c(1,3,4,5,6,7)]
-
-# figure out which predictors from testdata don't match with traindata
-trainfactors &lt;- names(traindata)[ sapply(traindata, is.factor)]
-testfactors &lt;- names(testdata)[ sapply(testdata, is.factor)]
-levels(testdata[[testfactors[1]]]) &lt;- levels(traindata[[trainfactors[1]]])
 
 # data splitting
 set.seed(111)
@@ -138,49 +126,6 @@ print(&quot;Classifications on the test set:&quot;); testresults</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
 ##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 ## Levels: A B C D E</code></pre>
-<pre class="r"><code># output the results to .txt files
-pml_write_files = function(x){
- n = length(x)
- for(i in 1:n){
-   filename = paste0(&quot;problem_id_&quot;,i,&quot;.txt&quot;)
-   write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
- }
-}
-
-pml_write_files(testresults)</code></pre>
-</div>
-<div id="evaluation" class="section level1">
-<h1>Evaluation</h1>
-<blockquote>
-<p>Please upload a link to the github repository containing your .Rmd or .md file and your compiled HTML file performing your analysis.</p>
-<ul>
-<li><p>Has the student submitted a github repo?</p></li>
-<li><p>Does the submission build a machine learning algorithm to predict activity quality from activity monitors?</p></li>
-</ul>
-<p>To evaluate the HTML file you may have to download the repo and open the compiled HTML document.</p>
-<p>Alternatively if they have submitted a repo with a gh-pages branch, you may be able to view the HTML page on the web. If the repo is:</p>
-<p><a href="https://github.com/DataScienceSpecialization/courses/tree/master/08_PracticalMachineLearning/001predictionMotivation" class="uri">https://github.com/DataScienceSpecialization/courses/tree/master/08_PracticalMachineLearning/001predictionMotivation</a></p>
-<p>then you can view the HTML page here:</p>
-<p><a href="http://datasciencespecialization.github.io/courses/08_PracticalMachineLearning/001predictionMotivation/" class="uri">http://datasciencespecialization.github.io/courses/08_PracticalMachineLearning/001predictionMotivation/</a></p>
-<ul>
-<li><p>Do the authors describe what they expect the out of sample error to be and estimate the error appropriately with cross-validation?</p></li>
-<li><p>Please use the space below to provide constructive feedback to the student who submitted the work. Point out the submission’s strengths and identify some areas for improvement. You may also use this space to explain your grading decisions.</p></li>
-</ul>
-<p><strong>Prediction Assignment Submission: Instructions Help Center</strong></p>
-<p>Please apply the machine learning algorithm you built to each of the 20 test cases in the testing data set. For more information and instructions on how to build your model see the prediction assignment writeup. For each test case you should submit a text file with a single capital letter (A, B, C, D, or E) corresponding to your prediction for the corresponding problem in the test data set. You get 1 point for each correct answer. You may submit up to 2 times for each problem. I know it is a lot of files to submit. It may be helpful to use the following function to create the files. If you have a character vector with your 20 predictions in order for the 20 problems. So something like (note these are not the right answers!):</p>
-<pre class="r"><code>answers = rep(&quot;A&quot;, 20)</code></pre>
-<p>then you can load this function by copying and pasting it into R:</p>
-<pre class="r"><code>pml_write_files = function(x){
-  n = length(x)
-  for(i in 1:n){
-    filename = paste0(&quot;problem_id_&quot;,i,&quot;.txt&quot;)
-    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
-  }
-}</code></pre>
-<p>then create a folder where you want the files to be written. Set that to be your working directory and run:</p>
-<pre class="r"><code>pml_write_files(answers)</code></pre>
-<p>and it will create one file for each submission. <strong>Note: if you use this script, please make sure the files that get written out have one character each with your prediction for the corresponding problem ID. I have noticed the script produces strange results if the answers variable is not a character vector.</strong></p>
-</blockquote>
 </div>
 
 
